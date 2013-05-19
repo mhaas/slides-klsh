@@ -1,0 +1,316 @@
+\documentclass[12pt,a4paper]{beamer}
+\usepackage[utf8x]{inputenc}
+\usepackage{ucs}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\author{Michael Haas <haas@cl.uni-heidelberg.de>}
+\title{Kernelized Locality-Sensitive Hashing}
+\subtitle{Seminar "Learning Similarity Metrics", Stefan Riezler, Artem Sokolov}
+\date{21-05-2013}
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}{Overview}
+\begin{itemize}
+\item Problem Definition & Motivation
+\item Related Work
+\item Locality-Sensitive Hashing
+\item Kernelized Locality-Sensitive Hashing
+\item Results
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Problem}
+\begin{itemize}
+\item Given a document D, find similar documents in set S.
+\item \textit{For s in S: if sim(D,S) then yield s}
+\item $|S| = 10000$ - easy
+\item $|S| = 15 billion$ - not so much
+\item Problem amplified: curse of dimensionality
+\item Need \textbf{sublinear} performance
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Related work}
+\begin{itemize}
+\item k-d trees, using spatial partitions
+    \begin{itemize}
+    \item Still worst-case linear query time
+    \end{itemize}
+\item Tree-based search structures
+    \begin{itemize}
+    \item Can also degenerate to linear time
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Basic Idea}
+\begin{itemize}
+\item \textbf{Approximate} similarity search
+\item Trade-Off: \textbf{predictable} accuracy loss VS fast queries
+\item Locality-Sensitive Hashing: high probably of collision for similar items
+\item Using sketches and subset of the data
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Locality-Sensitive Hashing}
+\begin{itemize}
+-- Charikar
+\item "Sketching algorithms for estimating similarity"
+\item A locality sensitive hashing scheme is a distribution on a Family F
+of hash functions operating on a collection of objects, such that for two objects
+x,y,
+$$PR_{h \in F}[h(x)=h(y)] = sim(x,y)$$
+$$sim(x,y)$$
+\item Minwise independent permutations - Broder et al
+\item Procedures used for rounding fractional solutions from linear programs and
+vector solutions to semidefinite programs can be used to dervice similarity preserving
+hash functions
+\item hash functions obtained from random hyperplane method is that the output
+is a single bit; the output of t functions can be concatenated to a t-bit vector
+\item reduce the problem to the Hamming space
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Overview}
+\begin{itemize}
+\item Problem Definition & Motivation
+\item Related Work
+\item \textbf{Locality-Sensitive Hashing}
+\item Kernelized Locality-Sensitive Hashing
+\item Results
+\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Locality-Sensitive Hashing}
+\begin{itemize}
+\item Map each data point to \textit{b}-bit vector
+\item \textit{b}-bit Vector: apply $h_1,h_2,..,h_n$ hash-functions to objects
+\item Locality-Sensitive Hashing Property \cite{lsh}:
+$$Pr[h(x_i)=h(x_j)]=sim(xi,xj)$$
+\item $$sim(x,y) \in [0,1]$$ is similarity function
+\end{itemize}
+\end{frame}
+
+\begin{frame}{LSH: Runtime}
+\begin{itemize}
+\item Query time to find ($1+\epsilon$) nearest neighbors: $O(n^{1/1+\epsilon})$
+\item Sublinear for $\epsilon>0$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{LSH: Finding Hash functions}
+\begin{itemize}
+\item Where do we get hash functions?
+\item Idea: Random Hyperplanes $r$!
+$$h_r(x)= \begin{array}{l l}
+    1 & \quad \text{if} r^Tx \bge 0}\\
+    0 & \quad \text{otherwise}
+  \end{array} \right.$$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{LSH: Locality-Sensitive Hashing property}
+\begin{itemize}
+\item Hash function $h_r$ satifies Locality-Sensitive Hashing property $Pr[h(x_i)=h(x_j)]=sim(xi,xj)$
+\item Goemans and Williamson showed for random vector $r$:
+$$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{||x_{i}| ||x_{j}||}$$
+\item 
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{LSH: Algorithm Idea}
+\begin{itemize}
+\item Draw \textit{b} random vectors $r$ from $N(0,I)$
+\item Build hash vector using \textit{b} hash functions
+\item Hash table consists of hash keys and pointers to data item
+\item Given incoming query q, hash q using same \textit{b} hash functions
+\item Hash bucket for q contains nearest neighbor candidates
+\end{itemize}
+\end{frame}
+
+\begin{frame}{LSH: Algorithm}
+\begin{itemize}
+\item Given $n$ database keys, form $M=2n^{1/(1-\epsilon)}$ permutations of keys
+\item Sort M lists of permuted hash keys
+\item Compute query hash key q, look up in M lists via binary-search
+\item 2M nearest examples are nearest neighbor candidates
+\item $O(n^{1/1+\epsilon})$ database items considered
+
+\begin{frame}{Overview}
+\begin{itemize}
+\item Problem Definition & Motivation
+\item Related Work
+\item Locality-Sensitive Hashing
+\item \textbf{Kernelized Locality-Sensitive Hashing}
+\item Results
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kernelized Locality-Sensitive Hashing}
+\begin{itemize}
+\item Kernel functions can be seen as similarity measure: $sim(x,y) = k(x,y) = \phi(x_{i}^{T}\phi(x_{j})) $
+\item Using kernel functions in LSH is easy then: build $h_r(x)$ by sampling vector $r$ from kernel space
+\item $h_r(x)=sign(r^T\phi(x))$
+\item Not all kernel functions have known embeddings! \cite{klsh}
+\item Not all known embeddedings are easily computable!
+\item Example: Feature space of the Radial Basis Kernel has infinite number of dimensions
+\end{itemize}
+\end{frame}
+
+\begin{frame}{KLSH: Idea}
+\begin{itemize}
+\item Task: Find $r$ so that $r^T\phi(x)$ can be computed via kernel function
+\item Idea: Construct $r$ as subset of weighted database items
+\item $r$ must be Gaussian
+\end{itemize}
+\end{frame}
+
+\begin{frame}{KLSH: }
+\begin{itemize}
+\item Consider each point $\phi(x)$ as vector from underlying distribution D
+\item $\mu$ and $\Sigma$ unknown
+\item $z_{t} = \frac{1}{t}\sum_{i \in S}{\phi (x_{i})}$
+\item For sufficiently large $t$ (CLT):
+\item $ \~z_{t} = \sqrt{t}(z_{t} - \mu) $
+\item $\~z_{t}$ distributed according to  $N(0,\Sigma)$
+\item $\Sigma^{\frac{-1}{2}}\~ z_{t}$ distributing according to $N(0,I)$ (whitening transform: entries now uncorrelated and with variance 1)
+$$h_r(\phi ( x) )= \begin{array}{l l}
+    1 & \quad \text{if} \phi (x)^{T} \Sigma^{\frac{-1}{2}}\~ z_{t} \gte 0}\\
+    0 & \quad \text{otherwise}
+  \end{array} \right.$$
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Estimating mean and covariance}
+\begin{itemize}
+\item But: $\Sigma$ and $\mu$ are unknown
+\item Approximate by sampling the data! Choose $p$ database items
+\item Implicitly:
+\begin{itemize}
+\item $\mu = \frac{1}{p}\sum_{i=1}^{p}\phi(x)$
+\item Similar for $\Sigma$
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\begin{itemize}
+\item $K$: Kernel matrix over sampled points $p$
+\item Eigendecomposition: $K=U \Theta U^{T}$
+\item Eigendecomposition: $ \Sigma = V \Lambda V^{^T} $, $ \Sigma^{\frac{-1}{2}} = V \Lambda^{\frac{-1}{2}} V^{T}$
+\item $h(\phi(x)) = sign(\phi(x)^T V \Lambda^{\frac{-1}{2}} V^{T} \~ z_t{t})$
+\item $v_{k}$: k-th Eigenvector of $\Sigma$
+\item $u_{k}$: k-th Eigenvector of $K$
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+\item According to derivation of kPCA:
+\item $v_{k}^{T}\phi(x) = \sum_{i=1}^{p}{ \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \phi (x)  }$
+
+\item We also get: $\phi(x)^{T} V \Lambda^{-1/2} V^{T} \~ z_{t} = \sum_{k=1}^{p}{\frac{1}{\sqrt{\theta_{k}} v_{k}^{T} \phi(x) v_{k}^{T} \~ z_{t} }}}$
+
+\item Substitute first equation for eigenvector inner products
+$$ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \~ z_{t} = \sum_{k=1}^{p} {
+
+\frac{1}{\sqrt{\theta_{k}} 
+
+(\sum_{i=1}^{p}{ \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \phi (x)  })
+(\sum_{i=1}^{p}{ \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \~ z_{t}  })
+}   $$
+\item (..) further derivations
+$$ = \sum_{i=1}^{p}\sum_{j=1}^{p} K_{ij}^{-3/2}(\phi ( x_{i}^{T} \phi (x) ) (  x_{i}^{T} \~ z_{t}  ) $$
+$$ = \sum_{i=1}^{p} w(i) (  x_{i}^{T} \phi (x) ) $$
+\item where $w(i) = \sum_{j=1} K_{ij}^{-3/2} (  x_{i}^{T} \~ z_{t}) $
+\item Recall $\~ z_{t} = \frac{1}{\sqrt{t}} \sum_{i \in S}{\phi (xi) $
+\item $w(i) = \frac{1}{\sqrt{t}}\sum_{j=1}^{p}\sum{t \in S} K_{ij}^{-3/2} K_{jl} $
+\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}{KLSH: Simplification of w }
+\begin{itemize}
+\item $t$ points are subset of $p$ sampled points
+\item $e_s$ is vector with ones in entries corresponding to indices of S
+\item $w = K^(-1/2) e_s$
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{KLSH: Final hash function}
+\begin{itemize}
+\item Effectively, $r$ needed for $h_r(x)=sign(r^T\phi(x))$
+is now weighted sum of feature vectors from $p$ sampled database items
+\item $$h(\phi(x)) = sign(\sum_{i=1}^{p}{w(i)\phi(x_{i})^{T}\phi(x)})$$
+\item Since $k(x,y) = \phi(x_{i}^{T}\phi(x_{j}))$, we get
+\item $$h(\phi(x)) = sign(\sum_{i=1}^{p}{w(i)k(x,x_{i}))$$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{(K)-LSH: Algorithm}
+\begin{itemize}
+\item Select p data points and build kernel matrix $K$
+\item Form hash table over database items:
+For each hash function, form $w$ ($e_s$) by sampling t indices from $[1,...,p]]$.
+Assign bits according to $h(\phi (x)) = sign (\sum_{i} w(i) k(x, x_{i}) )$
+\item Use regular LSH algorithm with $h(x)$ hash function
+
+    \begin{itemize}
+    \item Given $n$ database keys, form $M=2n^{1/(1-\epsilon)}$ permutations of keys
+    \item Sort M lists of permuted hash keys
+    \item Compute query hash key q, look up in M lists via binary-search
+    \item 2M nearest examples are nearest neighbor candidates
+    \item $O(n^{1/1+\epsilon})$ database items considered
+    \end{itemize}
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Runtime}
+\begin{itemize}
+\item Computing $K^{-1/2}: O(p^{3})$ - Offline
+\item Each hash function: $O(p^{2})$ to compute $w$ - Offline
+\item Per hash function function evaluation: $O(p)$
+\item $p = O(\sqrt{n})$ guarantees sublinear time
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Overview}
+\begin{itemize}
+\item Problem Definition & Motivation
+\item Related Work
+\item Locality-Sensitive Hashing
+\item Kernelized Locality-Sensitive Hashing
+\item \textbf{Results}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{References}
+\begin{thebibliography}{-}
+\bibitem{klsh} Kulis, B., Grauman, K.: Kernelized Locality-Sensitive Hashing for Scalable Image Search.
+In Proc. 12th International Conference on Computer Vision (ICCV), 2009.
+\bibitem{lsh} Charikar, Moses S.: Similarity estimation techniques from rounding algorithms. Proceedings of the thiry-fourth annual ACM symposium on Theory of computing. ACM, 2002.
+\end{thebibliography}
+\end{frame}
+\end{document}
