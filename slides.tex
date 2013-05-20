@@ -5,8 +5,8 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
-\author{Michael Haas <haas@cl.uni-heidelberg.de>}
-\title{Kernelized Locality-Sensitive Hashing}
+\author{Michael Haas, haas@cl.uni-heidelberg.de}
+\title{Kulis \& Grauman: Kernelized Locality-Sensitive Hashing}
 \subtitle{Seminar Learning Similarity Metrics, Stefan Riezler, Artem Sokolov}
 \date{21-05-2013}
 \begin{document}
@@ -55,8 +55,9 @@
 \item \textbf{Approximate} similarity search
 \item Our similarity measures are not exact, so matches need not be exact either
 \item Trade-Off: \textbf{predictable} accuracy loss VS fast queries
-\item Locality-Sensitive Hashing: high probably of collision for similar items
+\item Locality-Sensitive Hashing: high probability of collision for similar items
 \item Using sketches of data instead of full representation
+\item Dimensionality reduction
 \end{itemize}
 \end{frame}
 
@@ -150,8 +151,7 @@ $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{
 
 \begin{frame}{Kernelized Locality-Sensitive Hashing}
 \begin{itemize}
-\item Grauman \& Kulis,  \cite{klsh}
-\item Kernel functions as similarity measure: $sim(x,y) = k(x,y) = \phi(x_{i})^{T}\phi(x_{j}) $
+\item Kernel functions as similarity measure: $sim(x,y) = k(x,y) = \phi(x_{i})^{T}\phi(x_{j}) $ \cite{klsh}
 \item Using kernel functions in LSH: build $h_r(x)$ by sampling vector $r$ from kernel space
 $$h_r(x)=sign(r^T\phi(x))$$
 \item Not all kernel functions have known embeddings! \cite{klsh}
@@ -168,25 +168,26 @@ $$h_r(x)=sign(r^T\phi(x))$$
 \end{itemize}
 \end{frame}
 
-\begin{frame}{KLSH: }
+\begin{frame}{KLSH: Find r}
 \begin{itemize}
-\item Consider each point $\phi(x)$ as vector from underlying distribution D
+\item Consider each point $\phi(x)$ as vector from underlying distribution $D$
 \item $\mu$ and $\Sigma$ unknown
+\item Let $S$ be sample of $t$ objects from $D$
 \item $z_{t} = \frac{1}{t}\sum_{i \in S}{\phi (x_{i})}$
 \item For sufficiently large $t$ (CLT):
 $$ \tilde{z}_{t} = \sqrt{t}(z_{t} - \mu) $$
 \item $ \tilde{z}_{t}$ distributed according to  $N(0,\Sigma)$
-\item $\Sigma^{-1/2}\tilde{z}_{t}$ distributed according to $N(0,I)$ (whitening transform: entries now uncorrelated and with variance 1)
+\item $\Sigma^{-1/2}\tilde{z}_{t}$ distributed according to $N(0,I)$ - whitening transform 
 $$h_r(\phi ( x) )= \begin{array}{l l}
-    1 & \quad \text{if} \phi (x)^{T} \Sigma^{\frac{-1}{2}}\tilde{z}_{t} \geq 0\\
-    0 & \quad \text{otherwise}
+    1 & \quad \text{if } \phi (x)^{T} \Sigma^{\frac{-1}{2}}\tilde{z}_{t} \geq 0\\
+    0 & \quad \text{otherwise }
   \end{array}$$
 \end{itemize}
 \end{frame}
 
 
 
-\begin{frame}{Estimating mean and covariance}
+\begin{frame}{KLSH: Finding mean and covariance}
 \begin{itemize}
 \item But: $\Sigma$ and $\mu$ are unknown
 \item Approximate by sampling the data! Choose $p$ database items
@@ -199,22 +200,22 @@ $$h_r(\phi ( x) )= \begin{array}{l l}
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}{KLSH: Derivation}
 \begin{itemize}
 \item $K$: Kernel matrix over sampled points $p$
-\item Eigendecomposition: $K=U \Theta U^{T}$
 \item Eigendecomposition: $ \Sigma = V \Lambda V^{T} $, $ \Sigma^{-1/2} = V \Lambda^{-1/2} V^{T}$
 \item $h(\phi(x)) = sign(\phi(x)^T V \Lambda^{-1/2} V^{T} \tilde z_t{t})$
+\item Eigendecomposition: $K=U \Theta U^{T}$
 \item $v_{k}$: k-th Eigenvector of $\Sigma$
 \item $u_{k}$: k-th Eigenvector of $K$
 \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{KLSH: Derivation}
 \begin{itemize}
-\item According to derivation of kPCA:
+\item Compute projection:
 $$ v_{k}^{T} \phi (x) = \sum_{i=1}^{p}  \frac{1}{ \sqrt{ \theta_{k} } } u_{k}(i) \phi (x_{i})^{T} \phi (x)  $$
-\item We also get: $ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = \sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}}} v_{k}^{T} \phi(x) v_{k}^{T} \tilde z_{t} $
+\item Complete $h(\phi (x))$ i$$ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = \sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}}} v_{k}^{T} \phi(x) v_{k}^{T} \tilde z_{t} $$
 \item Substitute first equation for eigenvector inner products
 $$ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = $$
 $$\sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}}} 
@@ -224,11 +225,10 @@ $$
 \end{itemize}
 \end{frame}
 
-\begin{frame}
-\begin{itemize}
-\item (..) further derivations
+\begin{frame}{KLSH: More Derivations}
 $$ = \sum_{i=1}^{p}\sum_{j=1}^{p} K_{ij}^{-3/2}(\phi ( x_{i}^{T} \phi (x) ) (  x_{i}^{T} \tilde z_{t}  ) $$
 $$ = \sum_{i=1}^{p} w(i) (  x_{i}^{T} \phi (x) ) $$
+\begin{itemize}
 \item where $w(i) = \sum_{j=1} K_{ij}^{-3/2} (  x_{i}^{T} \tilde z_{t}) $
 \item Recall $\tilde z_{t} = \frac{1} {\sqrt{t}} \sum_{i \in S}{\phi (xi)} $
 $$w(i) = \frac{1}{\sqrt{t}}\sum_{j=1}^{p}\sum_{t \in S} K_{ij}^{-3/2} K_{jl} $$
@@ -241,8 +241,8 @@ $$w(i) = \frac{1}{\sqrt{t}}\sum_{j=1}^{p}\sum_{t \in S} K_{ij}^{-3/2} K_{jl} $$
 
 \begin{frame}{KLSH: Simplification of w }
 \begin{itemize}
-\item $t$ points are subset of $p$ sampled points
-\item $e_s$ is vector with ones in entries corresponding to indices of S
+\item $t$ points $\in S$ are subset of $p$ sampled points
+\item $e_s$ is vector with ones in entries corresponding to indices of $S$
 \item $w = K^{(-1/2)} e_s$
 \end{itemize}
 \end{frame}
@@ -251,7 +251,7 @@ $$w(i) = \frac{1}{\sqrt{t}}\sum_{j=1}^{p}\sum_{t \in S} K_{ij}^{-3/2} K_{jl} $$
 
 \begin{frame}{KLSH Final hash function}
 \begin{itemize}
-\item Effectively, $r$ needed for $h_r(x)=sign(r^T\phi(x))$ is now weighted sum of feature vectors from $p$ sampled database items
+\item $r$ needed for $h_r(x)=sign(r^T\phi(x))$ is now weighted sum of feature vectors from $p$ sampled database items
 $$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)\phi(x_{i})^{T}\phi(x))$$
 \item Since $k(x_i,x_j) = \phi(x_{i})^{T}\phi(x_{j}) $, we get
 $$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)k(x,x_{i}))$$
