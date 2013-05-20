@@ -28,8 +28,8 @@
 
 \begin{frame}{Problem}
 \begin{itemize}
-\item Given a document D, find similar documents in set S.
-\item \textit{For s in S: if sim(D,S) then yield s}
+\item Given a document s, find similar documents in set D.
+\item \textit{For s in D: if sim(d,s) then yield s}
 \item $|S| = 10000$ - easy
 \item $|S| = 15 \times 10^9$ - not so much
 \item Problem amplified: curse of dimensionality
@@ -37,7 +37,7 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Related work}
+\begin{frame}{Related work: Fast search algorithms}
 \begin{itemize}
 \item k-d trees, using spatial partitions
     \begin{itemize}
@@ -53,9 +53,10 @@
 \begin{frame}{Basic Idea}
 \begin{itemize}
 \item \textbf{Approximate} similarity search
+\item Our similarity measures are not exact, so matches need not be exact either
 \item Trade-Off: \textbf{predictable} accuracy loss VS fast queries
 \item Locality-Sensitive Hashing: high probably of collision for similar items
-\item Using sketches and subset of the data
+\item Using sketches of data instead of full representation
 \end{itemize}
 \end{frame}
 
@@ -70,12 +71,9 @@
 \end{frame}
 
 
-
-
-
 \begin{frame}{Locality-Sensitive Hashing}
 \begin{itemize}
-\item Map each data point to \textit{b}-bit vector
+\item Map each data point to \textit{b}-bit vector  (Charikar, \cite{lsh})
 \item \textit{b}-bit Vector: apply $h_1,h_2,..,h_n$ hash-functions to objects
 \item Locality-Sensitive Hashing Property \cite{lsh}: $$Pr[h(x_i)=h(x_j)]=sim(x_i,x_j)$$
 \item $sim(x,y) \in [0,1]$ is similarity function
@@ -98,6 +96,7 @@ $$h_r(x)= \begin{array}{l l}
     1 & \quad \text{if} r^Tx \geq 0\\
     0 & \quad \text{otherwise}
   \end{array} .$$
+\item Works for cosine similarity
 \end{itemize}
 \end{frame}
 
@@ -108,7 +107,6 @@ $$h_r(x)= \begin{array}{l l}
 $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{||x_{i}| ||x_{j}||}$$
 \end{itemize}
 \end{frame}
-
 
 
 \begin{frame}{LSH: Algorithm Idea}
@@ -123,11 +121,20 @@ $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{
 
 \begin{frame}{LSH: Algorithm}
 \begin{itemize}
-\item Given $n$ database keys, form $M=2n^{1/(1-\epsilon)}$ permutations of keys
+\item Given $n$ database keys, form $M=2n^{1/(1+\epsilon)}$ permutations of keys
 \item Sort M lists of permuted hash keys
 \item Compute query hash key q, look up in M lists via binary-search
 \item 2M nearest examples are nearest neighbor candidates
 \item $O(n^{1/1+\epsilon})$ database items considered
+\end{itemize}
+\end{frame}
+
+\begin{frame}{LSH: Example: Broder}
+\begin{itemize}
+\item Broder \cite{broder}: represent documents as set of shingles (q-grams)
+\item Jaccard Coefficient as similarity measure
+\item Randomized hash functions use random permutations on set of shingles
+\item Represent shingles as sketch: $\tilde S_{A} = (min\{\pi_{1}(S_{A})\},..., min\{\pi_{t}(S_{A})\})$
 \end{itemize}
 \end{frame}
 
@@ -143,8 +150,9 @@ $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{
 
 \begin{frame}{Kernelized Locality-Sensitive Hashing}
 \begin{itemize}
-\item Kernel functions can be seen as similarity measure: $sim(x,y) = k(x,y) = \phi(x_{i})^{T}\phi(x_{j}) $
-\item Using kernel functions in LSH is easy then: build $h_r(x)$ by sampling vector $r$ from kernel space
+\item Grauman \& Kulis,  \cite{klsh}
+\item Kernel functions as similarity measure: $sim(x,y) = k(x,y) = \phi(x_{i})^{T}\phi(x_{j}) $
+\item Using kernel functions in LSH: build $h_r(x)$ by sampling vector $r$ from kernel space
 $$h_r(x)=sign(r^T\phi(x))$$
 \item Not all kernel functions have known embeddings! \cite{klsh}
 \item Not all known embeddedings are easily computable!
@@ -156,7 +164,7 @@ $$h_r(x)=sign(r^T\phi(x))$$
 \begin{itemize}
 \item Task: Find $r$ so that $r^T\phi (x)$ can be computed via kernel function
 \item Idea: Construct $r$ as subset of weighted database items
-\item $r$ must be Gaussian
+\item $r$ must be Gaussian \cite{lsh}
 \end{itemize}
 \end{frame}
 
@@ -206,7 +214,7 @@ $$h_r(\phi ( x) )= \begin{array}{l l}
 \begin{itemize}
 \item According to derivation of kPCA:
 $$ v_{k}^{T} \phi (x) = \sum_{i=1}^{p}  \frac{1}{ \sqrt{ \theta_{k} } } u_{k}(i) \phi (x_{i})^{T} \phi (x)  $$
-\item We also get: $ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = \sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}} v_{k}^{T} \phi(x) v_{k}^{T} \tilde z_{t} }$
+\item We also get: $ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = \sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}}} v_{k}^{T} \phi(x) v_{k}^{T} \tilde z_{t} $
 \item Substitute first equation for eigenvector inner products
 $$ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = $$
 $$\sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}}} 
@@ -245,7 +253,7 @@ $$w(i) = \frac{1}{\sqrt{t}}\sum_{j=1}^{p}\sum_{t \in S} K_{ij}^{-3/2} K_{jl} $$
 \begin{itemize}
 \item Effectively, $r$ needed for $h_r(x)=sign(r^T\phi(x))$ is now weighted sum of feature vectors from $p$ sampled database items
 $$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)\phi(x_{i})^{T}\phi(x))$$
-\item Since $k(x,y) = \phi(x_{i}^{T}\phi(x_{j}))$, we get
+\item Since $k(x_i,x_j) = \phi(x_{i})^{T}\phi(x_{j}) $, we get
 $$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)k(x,x_{i}))$$
 \end{itemize}
 \end{frame}
@@ -270,6 +278,13 @@ $$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)k(x,x_{i}))$$
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Setting parameters p and t}
+\begin{itemize}
+\item No bounds known for p and t
+\item Empirical evidence: $p = 300$, $t = 30$
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Runtime}
 \begin{itemize}
 \item Computing $K^{-1/2}: O(p^{3})$ - Offline
@@ -289,12 +304,76 @@ $$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)k(x,x_{i}))$$
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Results - Runtime}
+\begin{itemize}
+\item Task: Content-Based image retrieval
+\item Data: $80\times 10^6$ 32x32 images, vector dimension = 384
+\item Runtime performance: 0.98\% of images searched to retrieve best 10 approximate nearest neighbors
+\item Search performed in $<1s$
+\item Linear scan: $45s$
+\item No gold standard annotation, but: top 50 linear scan matches cover top 10 LKSH matches
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\includegraphics[width=\textwidth]{queries3_from_kulis.jpg}\\
+Leftmost: query. Top row: linear scan. Bottom row: KLSH.
+\end{frame}
+
+\begin{frame}{Results - Accuracy}
+\begin{itemize}
+\item Task: Example-based object recognition
+\item Data: 9k images, 101 categories
+\item Measure: Accuracy, 1-nearest neighbor classifier
+\item Previous Approach: LSH with pyramid match (known embedding)
+\item New approach: KLSH with CORR-Kernel, adapted to data (no known embedding)
+\item Results:
+\begin{itemize}
+    \item LSH + pyramid: 48\% accuracy
+    \item KLSH + CORR: 59\% accuracy
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Recap \& Discussion}
+\begin{itemize}
+\item LSH useful for otherwise intractably large data sets
+\item Kulis \& Grauman extend LSH to arbitrary kernels
+\item Enhanced performance using right kernel
+\item Applications to NLP:
+\begin{itemize}
+    \item String kernels from SMT for duplicate detection, i.e. improve on Broder \cite{broder}
+    \item ...
+\end{itemize}
+\item Questions?
+\end{itemize}
+\end{frame}
+
 
 \begin{frame}{References}
 \begin{thebibliography}{-}
 \bibitem{klsh} Kulis, B., Grauman, K.: Kernelized Locality-Sensitive Hashing for Scalable Image Search.
 In Proc. 12th International Conference on Computer Vision (ICCV), 2009.
 \bibitem{lsh} Charikar, Moses S.: Similarity estimation techniques from rounding algorithms. Proceedings of the thiry-fourth annual ACM symposium on Theory of computing. ACM, 2002.
+\bibitem{broder} Broder, A.: Identifying and Filtering Near-Duplicate Documents. In Combinatorial Pattern Matching, Volume 1848. 2000
+
+%@incollection{
+%year={2000},
+%isbn={978-3-540-67633-1},
+%booktitle={Combinatorial Pattern Matching},
+%volume={1848},
+%series={Lecture Notes in Computer Science},
+%editor={Giancarlo, Raffaele and Sankoff, David},
+%doi={10.1007/3-540-45123-4_1},
+%title={Identifying and Filtering Near-Duplicate Documents},
+%url={http://dx.doi.org/10.1007/3-540-45123-4_1},
+%publisher={Springer Berlin Heidelberg},
+%author={Broder, AndreiZ.},
+%pages={1-10},
+%language={English}
+%}
+
+
 \end{thebibliography}
 \end{frame}
 \end{document}
