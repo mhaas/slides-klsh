@@ -7,16 +7,18 @@
 \usepackage{amssymb}
 \author{Michael Haas <haas@cl.uni-heidelberg.de>}
 \title{Kernelized Locality-Sensitive Hashing}
-\subtitle{Seminar "Learning Similarity Metrics", Stefan Riezler, Artem Sokolov}
+\subtitle{Seminar Learning Similarity Metrics, Stefan Riezler, Artem Sokolov}
 \date{21-05-2013}
 \begin{document}
+
+
 \begin{frame}
 \maketitle
 \end{frame}
 
 \begin{frame}{Overview}
 \begin{itemize}
-\item Problem Definition & Motivation
+\item Problem Definition \& Motivation
 \item Related Work
 \item Locality-Sensitive Hashing
 \item Kernelized Locality-Sensitive Hashing
@@ -29,7 +31,7 @@
 \item Given a document D, find similar documents in set S.
 \item \textit{For s in S: if sim(D,S) then yield s}
 \item $|S| = 10000$ - easy
-\item $|S| = 15 billion$ - not so much
+\item $|S| = 15 \times 10^9$ - not so much
 \item Problem amplified: curse of dimensionality
 \item Need \textbf{sublinear} performance
 \end{itemize}
@@ -57,28 +59,9 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Locality-Sensitive Hashing}
-\begin{itemize}
--- Charikar
-\item "Sketching algorithms for estimating similarity"
-\item A locality sensitive hashing scheme is a distribution on a Family F
-of hash functions operating on a collection of objects, such that for two objects
-x,y,
-$$PR_{h \in F}[h(x)=h(y)] = sim(x,y)$$
-$$sim(x,y)$$
-\item Minwise independent permutations - Broder et al
-\item Procedures used for rounding fractional solutions from linear programs and
-vector solutions to semidefinite programs can be used to dervice similarity preserving
-hash functions
-\item hash functions obtained from random hyperplane method is that the output
-is a single bit; the output of t functions can be concatenated to a t-bit vector
-\item reduce the problem to the Hamming space
-\end{itemize}
-\end{frame}
-
 \begin{frame}{Overview}
 \begin{itemize}
-\item Problem Definition & Motivation
+\item Problem Definition \& Motivation
 \item Related Work
 \item \textbf{Locality-Sensitive Hashing}
 \item Kernelized Locality-Sensitive Hashing
@@ -94,9 +77,8 @@ is a single bit; the output of t functions can be concatenated to a t-bit vector
 \begin{itemize}
 \item Map each data point to \textit{b}-bit vector
 \item \textit{b}-bit Vector: apply $h_1,h_2,..,h_n$ hash-functions to objects
-\item Locality-Sensitive Hashing Property \cite{lsh}:
-$$Pr[h(x_i)=h(x_j)]=sim(xi,xj)$$
-\item $$sim(x,y) \in [0,1]$$ is similarity function
+\item Locality-Sensitive Hashing Property \cite{lsh}: $$Pr[h(x_i)=h(x_j)]=sim(x_i,x_j)$$
+\item $sim(x,y) \in [0,1]$ is similarity function
 \end{itemize}
 \end{frame}
 
@@ -113,18 +95,17 @@ $$Pr[h(x_i)=h(x_j)]=sim(xi,xj)$$
 \item Where do we get hash functions?
 \item Idea: Random Hyperplanes $r$!
 $$h_r(x)= \begin{array}{l l}
-    1 & \quad \text{if} r^Tx \bge 0}\\
+    1 & \quad \text{if} r^Tx \geq 0\\
     0 & \quad \text{otherwise}
-  \end{array} \right.$$
+  \end{array} .$$
 \end{itemize}
 \end{frame}
 
 \begin{frame}{LSH: Locality-Sensitive Hashing property}
 \begin{itemize}
-\item Hash function $h_r$ satifies Locality-Sensitive Hashing property $Pr[h(x_i)=h(x_j)]=sim(xi,xj)$
+\item Hash function $h_r$ satifies Locality-Sensitive Hashing property $Pr[h(x_i)=h(x_j)]=sim(x_i,x_j)$
 \item Goemans and Williamson showed for random vector $r$:
 $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{||x_{i}| ||x_{j}||}$$
-\item 
 \end{itemize}
 \end{frame}
 
@@ -147,10 +128,12 @@ $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{
 \item Compute query hash key q, look up in M lists via binary-search
 \item 2M nearest examples are nearest neighbor candidates
 \item $O(n^{1/1+\epsilon})$ database items considered
+\end{itemize}
+\end{frame}
 
 \begin{frame}{Overview}
 \begin{itemize}
-\item Problem Definition & Motivation
+\item Problem Definition \& Motivation
 \item Related Work
 \item Locality-Sensitive Hashing
 \item \textbf{Kernelized Locality-Sensitive Hashing}
@@ -160,9 +143,9 @@ $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{
 
 \begin{frame}{Kernelized Locality-Sensitive Hashing}
 \begin{itemize}
-\item Kernel functions can be seen as similarity measure: $sim(x,y) = k(x,y) = \phi(x_{i}^{T}\phi(x_{j})) $
+\item Kernel functions can be seen as similarity measure: $sim(x,y) = k(x,y) = \phi(x_{i})^{T}\phi(x_{j}) $
 \item Using kernel functions in LSH is easy then: build $h_r(x)$ by sampling vector $r$ from kernel space
-\item $h_r(x)=sign(r^T\phi(x))$
+$$h_r(x)=sign(r^T\phi(x))$$
 \item Not all kernel functions have known embeddings! \cite{klsh}
 \item Not all known embeddedings are easily computable!
 \item Example: Feature space of the Radial Basis Kernel has infinite number of dimensions
@@ -171,7 +154,7 @@ $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{
 
 \begin{frame}{KLSH: Idea}
 \begin{itemize}
-\item Task: Find $r$ so that $r^T\phi(x)$ can be computed via kernel function
+\item Task: Find $r$ so that $r^T\phi (x)$ can be computed via kernel function
 \item Idea: Construct $r$ as subset of weighted database items
 \item $r$ must be Gaussian
 \end{itemize}
@@ -183,13 +166,13 @@ $$Pr[sign(x^T_{i}=sign(x^T_{j})]=1-\frac{1}{\pi}\cos^{-1}\frac{x^{T}_{i} x_{j}}{
 \item $\mu$ and $\Sigma$ unknown
 \item $z_{t} = \frac{1}{t}\sum_{i \in S}{\phi (x_{i})}$
 \item For sufficiently large $t$ (CLT):
-\item $ \~z_{t} = \sqrt{t}(z_{t} - \mu) $
-\item $\~z_{t}$ distributed according to  $N(0,\Sigma)$
-\item $\Sigma^{\frac{-1}{2}}\~ z_{t}$ distributing according to $N(0,I)$ (whitening transform: entries now uncorrelated and with variance 1)
+$$ \tilde{z}_{t} = \sqrt{t}(z_{t} - \mu) $$
+\item $ \tilde{z}_{t}$ distributed according to  $N(0,\Sigma)$
+\item $\Sigma^{-1/2}\tilde{z}_{t}$ distributed according to $N(0,I)$ (whitening transform: entries now uncorrelated and with variance 1)
 $$h_r(\phi ( x) )= \begin{array}{l l}
-    1 & \quad \text{if} \phi (x)^{T} \Sigma^{\frac{-1}{2}}\~ z_{t} \gte 0}\\
+    1 & \quad \text{if} \phi (x)^{T} \Sigma^{\frac{-1}{2}}\tilde{z}_{t} \geq 0\\
     0 & \quad \text{otherwise}
-  \end{array} \right.$$
+  \end{array}$$
 \end{itemize}
 \end{frame}
 
@@ -200,10 +183,10 @@ $$h_r(\phi ( x) )= \begin{array}{l l}
 \item But: $\Sigma$ and $\mu$ are unknown
 \item Approximate by sampling the data! Choose $p$ database items
 \item Implicitly:
-\begin{itemize}
-\item $\mu = \frac{1}{p}\sum_{i=1}^{p}\phi(x)$
-\item Similar for $\Sigma$
-\end{itemize}
+    \begin{itemize}
+    \item $\mu = \frac{1}{p}\sum_{i=1}^{p}\phi(x)$
+    \item Similar for $\Sigma$
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -212,8 +195,8 @@ $$h_r(\phi ( x) )= \begin{array}{l l}
 \begin{itemize}
 \item $K$: Kernel matrix over sampled points $p$
 \item Eigendecomposition: $K=U \Theta U^{T}$
-\item Eigendecomposition: $ \Sigma = V \Lambda V^{^T} $, $ \Sigma^{\frac{-1}{2}} = V \Lambda^{\frac{-1}{2}} V^{T}$
-\item $h(\phi(x)) = sign(\phi(x)^T V \Lambda^{\frac{-1}{2}} V^{T} \~ z_t{t})$
+\item Eigendecomposition: $ \Sigma = V \Lambda V^{T} $, $ \Sigma^{-1/2} = V \Lambda^{-1/2} V^{T}$
+\item $h(\phi(x)) = sign(\phi(x)^T V \Lambda^{-1/2} V^{T} \tilde z_t{t})$
 \item $v_{k}$: k-th Eigenvector of $\Sigma$
 \item $u_{k}$: k-th Eigenvector of $K$
 \end{itemize}
@@ -222,24 +205,25 @@ $$h_r(\phi ( x) )= \begin{array}{l l}
 \begin{frame}
 \begin{itemize}
 \item According to derivation of kPCA:
-\item $v_{k}^{T}\phi(x) = \sum_{i=1}^{p}{ \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \phi (x)  }$
-
-\item We also get: $\phi(x)^{T} V \Lambda^{-1/2} V^{T} \~ z_{t} = \sum_{k=1}^{p}{\frac{1}{\sqrt{\theta_{k}} v_{k}^{T} \phi(x) v_{k}^{T} \~ z_{t} }}}$
-
+$$ v_{k}^{T} \phi (x) = \sum_{i=1}^{p}  \frac{1}{ \sqrt{ \theta_{k} } } u_{k}(i) \phi (x_{i})^{T} \phi (x)  $$
+\item We also get: $ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = \sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}} v_{k}^{T} \phi(x) v_{k}^{T} \tilde z_{t} }$
 \item Substitute first equation for eigenvector inner products
-$$ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \~ z_{t} = \sum_{k=1}^{p} {
+$$ \phi(x)^{T} V \Lambda^{-1/2} V^{T} \tilde z_{t} = $$
+$$\sum_{k=1}^{p} \frac{1}{\sqrt{\theta_{k}}} 
+(\sum_{i=1}^{p} \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \phi (x) )
+(\sum_{i=1}^{p} \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \tilde z_{t}  )
+$$
+\end{itemize}
+\end{frame}
 
-\frac{1}{\sqrt{\theta_{k}} 
-
-(\sum_{i=1}^{p}{ \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \phi (x)  })
-(\sum_{i=1}^{p}{ \frac{1}{ \sqrt{\theta_{k}} } u_{k}(i) \phi (x_{i})^{T} \~ z_{t}  })
-}   $$
+\begin{frame}
+\begin{itemize}
 \item (..) further derivations
-$$ = \sum_{i=1}^{p}\sum_{j=1}^{p} K_{ij}^{-3/2}(\phi ( x_{i}^{T} \phi (x) ) (  x_{i}^{T} \~ z_{t}  ) $$
+$$ = \sum_{i=1}^{p}\sum_{j=1}^{p} K_{ij}^{-3/2}(\phi ( x_{i}^{T} \phi (x) ) (  x_{i}^{T} \tilde z_{t}  ) $$
 $$ = \sum_{i=1}^{p} w(i) (  x_{i}^{T} \phi (x) ) $$
-\item where $w(i) = \sum_{j=1} K_{ij}^{-3/2} (  x_{i}^{T} \~ z_{t}) $
-\item Recall $\~ z_{t} = \frac{1}{\sqrt{t}} \sum_{i \in S}{\phi (xi) $
-\item $w(i) = \frac{1}{\sqrt{t}}\sum_{j=1}^{p}\sum{t \in S} K_{ij}^{-3/2} K_{jl} $
+\item where $w(i) = \sum_{j=1} K_{ij}^{-3/2} (  x_{i}^{T} \tilde z_{t}) $
+\item Recall $\tilde z_{t} = \frac{1} {\sqrt{t}} \sum_{i \in S}{\phi (xi)} $
+$$w(i) = \frac{1}{\sqrt{t}}\sum_{j=1}^{p}\sum_{t \in S} K_{ij}^{-3/2} K_{jl} $$
 \end{itemize}
 \end{frame}
 
@@ -251,19 +235,18 @@ $$ = \sum_{i=1}^{p} w(i) (  x_{i}^{T} \phi (x) ) $$
 \begin{itemize}
 \item $t$ points are subset of $p$ sampled points
 \item $e_s$ is vector with ones in entries corresponding to indices of S
-\item $w = K^(-1/2) e_s$
+\item $w = K^{(-1/2)} e_s$
 \end{itemize}
 \end{frame}
 
 
 
-\begin{frame}{KLSH: Final hash function}
+\begin{frame}{KLSH Final hash function}
 \begin{itemize}
-\item Effectively, $r$ needed for $h_r(x)=sign(r^T\phi(x))$
-is now weighted sum of feature vectors from $p$ sampled database items
-\item $$h(\phi(x)) = sign(\sum_{i=1}^{p}{w(i)\phi(x_{i})^{T}\phi(x)})$$
+\item Effectively, $r$ needed for $h_r(x)=sign(r^T\phi(x))$ is now weighted sum of feature vectors from $p$ sampled database items
+$$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)\phi(x_{i})^{T}\phi(x))$$
 \item Since $k(x,y) = \phi(x_{i}^{T}\phi(x_{j}))$, we get
-\item $$h(\phi(x)) = sign(\sum_{i=1}^{p}{w(i)k(x,x_{i}))$$
+$$h(\phi(x)) = sign(\sum_{i=1}^{p}w(i)k(x,x_{i}))$$
 \end{itemize}
 \end{frame}
 
@@ -271,8 +254,10 @@ is now weighted sum of feature vectors from $p$ sampled database items
 \begin{itemize}
 \item Select p data points and build kernel matrix $K$
 \item Form hash table over database items:
-For each hash function, form $w$ ($e_s$) by sampling t indices from $[1,...,p]]$.
-Assign bits according to $h(\phi (x)) = sign (\sum_{i} w(i) k(x, x_{i}) )$
+\begin{itemize}
+\item For each hash function, form $w$ ($e_s$) by sampling t indices from $[1,...,p]]$.
+\item Assign bits according to $h(\phi (x)) = sign (\sum_{i} w(i) k(x, x_{i}) )$
+\end{itemize}
 \item Use regular LSH algorithm with $h(x)$ hash function
 
     \begin{itemize}
@@ -280,7 +265,6 @@ Assign bits according to $h(\phi (x)) = sign (\sum_{i} w(i) k(x, x_{i}) )$
     \item Sort M lists of permuted hash keys
     \item Compute query hash key q, look up in M lists via binary-search
     \item 2M nearest examples are nearest neighbor candidates
-    \item $O(n^{1/1+\epsilon})$ database items considered
     \end{itemize}
 
 \end{itemize}
@@ -290,14 +274,14 @@ Assign bits according to $h(\phi (x)) = sign (\sum_{i} w(i) k(x, x_{i}) )$
 \begin{itemize}
 \item Computing $K^{-1/2}: O(p^{3})$ - Offline
 \item Each hash function: $O(p^{2})$ to compute $w$ - Offline
-\item Per hash function function evaluation: $O(p)$
+\item Each hash function function evaluation: $O(p)$
 \item $p = O(\sqrt{n})$ guarantees sublinear time
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Overview}
 \begin{itemize}
-\item Problem Definition & Motivation
+\item Problem Definition \& Motivation
 \item Related Work
 \item Locality-Sensitive Hashing
 \item Kernelized Locality-Sensitive Hashing
